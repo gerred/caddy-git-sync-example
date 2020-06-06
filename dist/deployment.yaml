@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: static-sites
+spec:
+  selector:
+    matchLabels:
+      app: static
+  template:
+    metadata:
+      labels:
+        app: static
+    spec:
+      containers:
+        - name: static
+          image: gerred/git-sync:v3.1.6
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: GIT_SYNC_REPO
+              value: https://github.com/gerred/caddy-git-sync-example
+            - name: GIT_SYNC_WAIT
+              value: "60"
+            - name: GIT_SYNC_ROOT
+              value: /git/caddy
+          volumeMounts:
+            - name: "shared-data"
+              mountPath: "/git/caddy"
+        - name: caddy
+          image: caddy:2.0.0-alpine
+          ports:
+            - containerPort: 80
+              hostPort: 80
+            - containerPort: 443
+              hostPort: 443
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          args:
+            - config
+            - /usr/share/caddy/Caddyfile
+          volumeMounts:
+            - name: "shared-data"
+              mountPath: "/usr/share/caddy"
+      volumes:
+        - name: shared-data
+          emptyDir: {}
