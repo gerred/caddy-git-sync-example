@@ -11,6 +11,27 @@ spec:
       labels:
         app: static
     spec:
+      initContainers:
+        - name: static-init
+          image: gerred/git-sync:v3.1.6
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: GIT_SYNC_REPO
+              value: https://github.com/gerred/caddy-git-sync-example
+            - name: GIT_SYNC_WAIT
+              value: "60"
+            - name: GIT_SYNC_ROOT
+              value: /git/
+            - name: GIT_SYNC_ONE_TIME
+              value: "true"
+            - name: GIT_SYNC_DEST
+              value: caddy
+          volumeMounts:
+            - name: "shared-data"
+              mountPath: "/git/"
       containers:
         - name: static
           image: gerred/git-sync:v3.1.6
@@ -24,10 +45,12 @@ spec:
             - name: GIT_SYNC_WAIT
               value: "60"
             - name: GIT_SYNC_ROOT
-              value: /git/caddy
+              value: /git/
+            - name: GIT_SYNC_DEST
+              value: caddy
           volumeMounts:
             - name: "shared-data"
-              mountPath: "/git/caddy"
+              mountPath: "/git/"
         - name: caddy
           image: caddy:2.0.0-alpine
           ports:
@@ -39,12 +62,15 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "500m"
+          command:
+            - caddy
+            - start
           args:
-            - config
+            - --config
             - /usr/share/caddy/Caddyfile
           volumeMounts:
             - name: "shared-data"
-              mountPath: "/usr/share/caddy"
+              mountPath: "/usr/share/"
       volumes:
         - name: shared-data
           emptyDir: {}

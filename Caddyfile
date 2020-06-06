@@ -1,0 +1,7 @@
+localhost:8081 {
+  file_server /site1/*
+}
+
+localhost:8082 {
+  file_server /site2/*
+}
