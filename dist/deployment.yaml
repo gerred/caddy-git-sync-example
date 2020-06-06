@@ -64,8 +64,9 @@ spec:
               cpu: "500m"
           command:
             - caddy
-            - start
+            - run
           args:
+            - --watch
             - --config
             - /usr/share/caddy/Caddyfile
           volumeMounts:
